@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DenverSudoku</string>
+    <string name="main_title">Denver\'s Sudoku</string>
+    <string name="continue_label">Continue</string>
+    <string name="about_label">About</string>
+    <string name="exit_label">Exit</string>
+    <string name="new_label">New Game</string>
+</resources>
