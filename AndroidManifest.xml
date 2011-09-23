@@ -19,6 +19,11 @@
             android:theme="@android:style/Theme.Dialog"
             >
         </activity>
+        <activity
+            android:name=".PrefsActivity"
+            android:label="@string/settings_title"
+            >
+        </activity>
 
     </application>
 </manifest>

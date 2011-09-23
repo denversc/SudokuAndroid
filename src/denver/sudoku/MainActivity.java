@@ -3,6 +3,9 @@ package denver.sudoku;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -20,6 +23,23 @@ public class MainActivity extends Activity {
         aboutButton.setOnClickListener(new AboutOnClickListener());
         final View exitButton = this.findViewById(R.id.exit_button);
         exitButton.setOnClickListener(new ExitOnClickListener());
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        final boolean result = super.onCreateOptionsMenu(menu);
+        final MenuInflater inflater = this.getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return result;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settings:
+                this.startActivity(new Intent(this, PrefsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private class AboutOnClickListener implements OnClickListener {
