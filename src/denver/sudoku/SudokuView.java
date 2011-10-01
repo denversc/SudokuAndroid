@@ -2,7 +2,9 @@ package denver.sudoku;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.view.View;
 
 public class SudokuView extends View {
@@ -12,6 +14,7 @@ public class SudokuView extends View {
     private final float[] majorLines;
     private final float[] minorLines;
     private final float[] hiliteLines;
+    private final RectF[] boxes;
 
     public SudokuView(GameActivity game) {
         super(game);
@@ -23,6 +26,11 @@ public class SudokuView extends View {
         this.minorLines = new float[4 * 12];
         this.hiliteLines =
             new float[this.majorLines.length + this.minorLines.length];
+        this.boxes = new RectF[9 * 9];
+
+        for (int i = this.boxes.length - 1; i >= 0; i--) {
+            this.boxes[i] = new RectF();
+        }
     }
 
     protected void onDraw(Canvas canvas) {
@@ -49,6 +57,21 @@ public class SudokuView extends View {
         final int majorLinesColor = resources.getColor(R.color.puzzle_dark);
         majorLinesPaint.setColor(majorLinesColor);
         canvas.drawLines(this.majorLines, majorLinesPaint);
+
+        // paint the numbers
+        final Paint numbersPaint = new Paint();
+        final int numbersColor = Color.BLACK;
+        numbersPaint.setColor(numbersColor);
+        final char[] text = new char[1];
+        for (int i = this.boxes.length - 1; i >= 0; i--) {
+            final RectF box = this.boxes[i];
+            final int digit = this.game.getPuzzleValue(i);
+            final char c = digitToChar(digit);
+            text[0] = c;
+            final float x = box.left;
+            final float y = box.top;
+            canvas.drawText(text, 0, 1, x, y, numbersPaint);
+        }
     }
 
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -101,6 +124,49 @@ public class SudokuView extends View {
         }
         for (int i = 0; i < index; i++) {
             this.hiliteLines[hiliteIndex++] = this.minorLines[i] + 1f;
+        }
+
+        // calculate the sizes of the boxes
+        final float boxWidth = w / 9f;
+        final float boxHeight = h / 9f;
+        index = 0;
+        float y = 0f;
+        for (int row = 0; row < 9; row++) {
+            float x = 0f;
+            for (int col = 0; col < 9; col++) {
+                final RectF rect = this.boxes[index++];
+                rect.left = x;
+                x += boxWidth;
+                rect.right = x;
+                rect.top = y;
+                rect.bottom = y + boxHeight;
+            }
+            y += boxHeight;
+        }
+    }
+
+    public static char digitToChar(int digit) {
+        switch (digit) {
+            case 1:
+                return '1';
+            case 2:
+                return '2';
+            case 3:
+                return '3';
+            case 4:
+                return '4';
+            case 5:
+                return '5';
+            case 6:
+                return '6';
+            case 7:
+                return '7';
+            case 8:
+                return '8';
+            case 9:
+                return '9';
+            default:
+                throw new IllegalArgumentException("digit==" + digit);
         }
     }
 }
