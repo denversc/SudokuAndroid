@@ -28,8 +28,15 @@ public class GameActivity extends Activity {
         this.puzzle = new int[9 * 9];
         final Random random = new Random();
         for (int i = this.puzzle.length - 1; i >= 0; i--) {
-            final int randomValue = random.nextInt(9);
-            this.puzzle[i] = randomValue + 1;
+            final int randomInclude = random.nextInt(5);
+            final int value;
+            if (randomInclude != 0) {
+                value = 0;
+            } else {
+                final int randomValue = random.nextInt(9);
+                value = randomValue + 1;
+            }
+            this.puzzle[i] = value;
         }
 
         this.sudokuView = new SudokuView(this);

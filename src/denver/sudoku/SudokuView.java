@@ -128,6 +128,9 @@ public class SudokuView extends View {
             }
 
             final int digit = this.game.getPuzzleValue(i);
+            if (digit == 0) {
+                continue;
+            }
             final char c = digitToChar(digit);
             text[0] = c;
             final PointF point = this.boxCenters[i];
