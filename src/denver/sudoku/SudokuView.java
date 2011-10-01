@@ -18,13 +18,18 @@ public class SudokuView extends View {
     private final Paint minorLinesPaint;
     private final Paint majorLinesPaint;
     private final Paint fgPaint;
+    private final Paint selectedPaint;
 
     private final float[] majorLines;
     private final float[] minorLines;
     private final float[] hiliteLines;
-    private final PointF[] boxes;
+    private final PointF[] boxCenters;
+    private final RectF[] boxes;
     private float boxWidth;
     private float boxHeight;
+
+    private int selectedBox;
+    private boolean drawSelectedBox;
 
     public SudokuView(GameActivity game) {
         super(game);
@@ -54,14 +59,20 @@ public class SudokuView extends View {
         this.fgPaint.setStyle(Paint.Style.FILL);
         this.fgPaint.setTextAlign(Paint.Align.CENTER);
 
+        this.selectedPaint = new Paint();
+        final int selectedColor = resources.getColor(R.color.puzzle_selected);
+        this.selectedPaint.setColor(selectedColor);
+
         this.majorLines = new float[4 * 4];
         this.minorLines = new float[4 * 12];
         this.hiliteLines =
             new float[this.majorLines.length + this.minorLines.length];
-        this.boxes = new PointF[9 * 9];
+        this.boxCenters = new PointF[9 * 9];
+        this.boxes = new RectF[9 * 9];
 
         for (int i = this.boxes.length - 1; i >= 0; i--) {
-            this.boxes[i] = new PointF();
+            this.boxCenters[i] = new PointF();
+            this.boxes[i] = new RectF();
         }
     }
 
@@ -81,10 +92,15 @@ public class SudokuView extends View {
 
         final char[] text = new char[1];
         for (int i = this.boxes.length - 1; i >= 0; i--) {
+            if (this.drawSelectedBox && i == this.selectedBox) {
+                final RectF rect = this.boxes[i];
+                canvas.drawRect(rect, this.selectedPaint);
+            }
+
             final int digit = this.game.getPuzzleValue(i);
             final char c = digitToChar(digit);
             text[0] = c;
-            final PointF point = this.boxes[i];
+            final PointF point = this.boxCenters[i];
             final float x = point.x;
             final float y = point.y - fontHeightDiv2;
             canvas.drawText(text, 0, 1, x, y, this.fgPaint);
@@ -148,19 +164,20 @@ public class SudokuView extends View {
         final float boxHeight = h / 9f;
         index = 0;
         float y = 0f;
-        final RectF box = new RectF();
         for (int row = 0; row < 9; row++) {
             float x = 0f;
             for (int col = 0; col < 9; col++) {
-                box.left = x;
+                final RectF rect = this.boxes[index];
+                final PointF point = this.boxCenters[index];
+                index++;
+                rect.left = x;
                 x += boxWidth;
-                box.right = x;
-                box.top = y;
-                box.bottom = y + boxHeight;
+                rect.right = x;
+                rect.top = y;
+                rect.bottom = y + boxHeight;
 
-                final PointF point = this.boxes[index++];
-                point.x = box.centerX();
-                point.y = box.centerY();
+                point.x = rect.centerX();
+                point.y = rect.centerY();
             }
             y += boxHeight;
         }
