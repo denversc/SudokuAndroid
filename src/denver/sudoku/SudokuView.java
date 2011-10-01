@@ -79,6 +79,16 @@ public class SudokuView extends View {
         this.selectedBoxIndex = -1;
     }
 
+    public int getBoxIndexByCoords(float x, float y) {
+        for (int i = this.boxes.length - 1; i >= 0; i--) {
+            final RectF box = this.boxes[i];
+            if (box.contains(x, y)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void invalidateBox(int box) {
         this.invalidateBox(box, new Rect());
     }
@@ -102,12 +112,7 @@ public class SudokuView extends View {
             }
         }
 
-        final Rect tempRect = new Rect();
-        if (this.selectedBoxIndex >= 0) {
-            this.invalidateBox(this.selectedBoxIndex, tempRect);
-        }
-        this.invalidateBox(newBoxIndex, tempRect);
-        this.selectedBoxIndex = newBoxIndex;
+        this.setSelectedBox(newBoxIndex);
     }
 
     protected void onDraw(Canvas canvas) {
@@ -280,11 +285,36 @@ public class SudokuView extends View {
 
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            this.showKeypad();
-            return true;
-        } else {
-            return super.onTouchEvent(event);
+            final float eventX = event.getX();
+            final float eventY = event.getY();
+            final int boxIndex = this.getBoxIndexByCoords(eventX, eventY);
+            if (boxIndex >= 0) {
+                this.setSelectedBox(boxIndex);
+                this.showKeypad();
+                return true;
+            }
         }
+
+        return super.onTouchEvent(event);
+    }
+
+    public void setSelectedBox(int boxIndex) {
+        if (boxIndex < -1 || boxIndex >= this.boxes.length) {
+            throw new IllegalArgumentException("boxIndex==" + boxIndex);
+        }
+
+        final int oldBoxIndex = this.selectedBoxIndex;
+        this.selectedBoxIndex = boxIndex;
+
+        final Rect tempRect = new Rect();
+        if (oldBoxIndex >= 0) {
+            this.invalidateBox(oldBoxIndex, tempRect);
+        }
+        if (boxIndex >= 0) {
+            this.invalidateBox(boxIndex, tempRect);
+        }
+
+        this.selectedBoxIndex = boxIndex;
     }
 
     public void setSelectedBoxValue(int newValue) {
