@@ -1,7 +1,5 @@
 package denver.sudoku;
 
-import java.util.Random;
-
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -18,6 +16,23 @@ public class GameActivity extends Activity {
     private int[] puzzle;
     private boolean[] puzzleEditable;
 
+    public int[] getPuzzleFromIntent() {
+        final int difficulty =
+            this.getIntent().getIntExtra(KEY_DIFFICULTY, DIFFICULTY_EASY);
+        switch (difficulty) {
+            case DIFFICULTY_EASY:
+                return Puzzles.getEasyPuzzle();
+            case DIFFICULTY_MEDIUM:
+                return Puzzles.getMediumPuzzle();
+            case DIFFICULTY_HARD:
+                return Puzzles.getHardPuzzle();
+            default:
+                throw new IllegalArgumentException(
+                    "invalid difficulty retrieved from intent key \""
+                        + KEY_DIFFICULTY + "\": " + difficulty);
+        }
+    }
+
     public int getPuzzleValue(int index) {
         final int value = this.puzzle[index];
         return value;
@@ -30,20 +45,12 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.puzzle = new int[9 * 9];
+        this.puzzle = this.getPuzzleFromIntent();
         this.puzzleEditable = new boolean[this.puzzle.length];
-        final Random random = new Random();
         for (int i = this.puzzle.length - 1; i >= 0; i--) {
-            final int randomInclude = random.nextInt(5);
-            final int value;
-            if (randomInclude != 0) {
-                value = 0;
-            } else {
-                final int randomValue = random.nextInt(9);
-                value = randomValue + 1;
-            }
-            this.puzzle[i] = value;
-            this.puzzleEditable[i] = (value == 0);
+            final int value = this.puzzle[i];
+            final boolean editable = (value == 0);
+            this.puzzleEditable[i] = editable;
         }
 
         this.sudokuView = new SudokuView(this);
