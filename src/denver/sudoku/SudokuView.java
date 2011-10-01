@@ -290,8 +290,9 @@ public class SudokuView extends View {
     public void setSelectedBoxValue(int newValue) {
         final int boxIndex = this.selectedBoxIndex;
         if (boxIndex >= 0) {
-            this.game.setPuzzleValue(boxIndex, newValue);
-            this.invalidateBox(boxIndex);
+            if (this.game.setPuzzleValue(boxIndex, newValue)) {
+                this.invalidateBox(boxIndex);
+            }
         }
     }
 

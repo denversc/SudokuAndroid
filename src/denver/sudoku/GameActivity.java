@@ -16,6 +16,7 @@ public class GameActivity extends Activity {
 
     private SudokuView sudokuView;
     private int[] puzzle;
+    private boolean[] puzzleEditable;
 
     public int getPuzzleValue(int index) {
         final int value = this.puzzle[index];
@@ -26,6 +27,7 @@ public class GameActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         this.puzzle = new int[9 * 9];
+        this.puzzleEditable = new boolean[this.puzzle.length];
         final Random random = new Random();
         for (int i = this.puzzle.length - 1; i >= 0; i--) {
             final int randomInclude = random.nextInt(5);
@@ -37,6 +39,7 @@ public class GameActivity extends Activity {
                 value = randomValue + 1;
             }
             this.puzzle[i] = value;
+            this.puzzleEditable[i] = (value == 0);
         }
 
         this.sudokuView = new SudokuView(this);
@@ -44,10 +47,13 @@ public class GameActivity extends Activity {
         this.sudokuView.requestFocus();
     }
 
-    public void setPuzzleValue(int index, int value) {
+    public boolean setPuzzleValue(int index, int value) {
         if (value < 0 && value > 9) {
             throw new IllegalArgumentException("value==" + value);
+        } else if (!this.puzzleEditable[index]) {
+            return false;
         }
         this.puzzle[index] = value;
+        return true;
     }
 }
