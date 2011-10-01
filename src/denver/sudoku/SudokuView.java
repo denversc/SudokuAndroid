@@ -146,6 +146,13 @@ public class SudokuView extends View {
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 this.moveSelectedBox(1);
                 return true;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_SPACE:
+                if (this.selectedBoxIndex >= 0) {
+                    this.showKeypad();
+                }
+                return true;
             default:
                 return super.onKeyDown(keyCode, event);
         }
