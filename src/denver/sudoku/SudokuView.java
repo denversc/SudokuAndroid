@@ -13,6 +13,12 @@ public class SudokuView extends View {
 
     private final GameActivity game;
 
+    private final int bgColor;
+    private final Paint hiliteLinesPaint;
+    private final Paint minorLinesPaint;
+    private final Paint majorLinesPaint;
+    private final Paint fgPaint;
+
     private final float[] majorLines;
     private final float[] minorLines;
     private final float[] hiliteLines;
@@ -23,8 +29,30 @@ public class SudokuView extends View {
     public SudokuView(GameActivity game) {
         super(game);
         this.game = game;
+
         this.setFocusable(true);
         this.setFocusableInTouchMode(true);
+
+        final Resources resources = this.getResources();
+        this.bgColor = resources.getColor(R.color.puzzle_background);
+
+        this.hiliteLinesPaint = new Paint();
+        final int hiliteLinesColor = resources.getColor(R.color.puzzle_hilite);
+        this.hiliteLinesPaint.setColor(hiliteLinesColor);
+
+        this.minorLinesPaint = new Paint();
+        final int minorLinesColor = resources.getColor(R.color.puzzle_light);
+        this.minorLinesPaint.setColor(minorLinesColor);
+
+        this.majorLinesPaint = new Paint();
+        final int majorLinesColor = resources.getColor(R.color.puzzle_dark);
+        this.majorLinesPaint.setColor(majorLinesColor);
+
+        this.fgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        final int fgColor = resources.getColor(R.color.puzzle_foreground);
+        this.fgPaint.setColor(fgColor);
+        this.fgPaint.setStyle(Paint.Style.FILL);
+        this.fgPaint.setTextAlign(Paint.Align.CENTER);
 
         this.majorLines = new float[4 * 4];
         this.minorLines = new float[4 * 12];
@@ -38,40 +66,16 @@ public class SudokuView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        final Resources resources = this.getResources();
-
-        // paint the background
-        final int bgColor = resources.getColor(R.color.puzzle_background);
-        canvas.drawColor(bgColor);
-
-        // paint the hilite lines
-        final Paint hiliteLinesPaint = new Paint();
-        final int hiliteLinesColor = resources.getColor(R.color.puzzle_hilite);
-        hiliteLinesPaint.setColor(hiliteLinesColor);
-        canvas.drawLines(this.hiliteLines, hiliteLinesPaint);
-
-        // paint the minor lines
-        final Paint minorLinesPaint = new Paint();
-        final int minorLinesColor = resources.getColor(R.color.puzzle_light);
-        minorLinesPaint.setColor(minorLinesColor);
-        canvas.drawLines(this.minorLines, minorLinesPaint);
-
-        // paint the major lines
-        final Paint majorLinesPaint = new Paint();
-        final int majorLinesColor = resources.getColor(R.color.puzzle_dark);
-        majorLinesPaint.setColor(majorLinesColor);
-        canvas.drawLines(this.majorLines, majorLinesPaint);
+        canvas.drawColor(this.bgColor);
+        canvas.drawLines(this.hiliteLines, this.hiliteLinesPaint);
+        canvas.drawLines(this.minorLines, this.minorLinesPaint);
+        canvas.drawLines(this.majorLines, this.majorLinesPaint);
 
         // paint the numbers
-        final Paint fgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        final int fgColor = resources.getColor(R.color.puzzle_foreground);
-        fgPaint.setColor(fgColor);
-        fgPaint.setStyle(Paint.Style.FILL);
-        fgPaint.setTextSize(this.boxHeight * 0.75f);
-        fgPaint.setTextScaleX(this.boxWidth / this.boxHeight);
-        fgPaint.setTextAlign(Paint.Align.CENTER);
+        this.fgPaint.setTextSize(this.boxHeight * 0.75f);
+        this.fgPaint.setTextScaleX(this.boxWidth / this.boxHeight);
 
-        final FontMetrics fontMetrics = fgPaint.getFontMetrics();
+        final FontMetrics fontMetrics = this.fgPaint.getFontMetrics();
         final float fontHeight = fontMetrics.ascent + fontMetrics.descent;
         final float fontHeightDiv2 = fontHeight / 2f;
 
@@ -83,7 +87,7 @@ public class SudokuView extends View {
             final PointF point = this.boxes[i];
             final float x = point.x;
             final float y = point.y - fontHeightDiv2;
-            canvas.drawText(text, 0, 1, x, y, fgPaint);
+            canvas.drawText(text, 0, 1, x, y, this.fgPaint);
         }
     }
 
