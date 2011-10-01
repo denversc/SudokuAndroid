@@ -23,6 +23,10 @@ public class GameActivity extends Activity {
         return value;
     }
 
+    public boolean isPuzzleValueEditable(int index) {
+        return this.puzzleEditable[index];
+    }
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

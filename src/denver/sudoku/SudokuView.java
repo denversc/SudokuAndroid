@@ -310,6 +310,8 @@ public class SudokuView extends View {
         final int boxIndex = this.selectedBoxIndex;
         if (boxIndex < 0) {
             return false;
+        } else if (!this.game.isPuzzleValueEditable(boxIndex)) {
+            return true;
         }
 
         final KeypadDialog keypad = new KeypadDialog(this.game);
