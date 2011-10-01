@@ -79,11 +79,12 @@ public class SudokuView extends View {
         this.selectedBoxIndex = -1;
     }
 
+    public void invalidateBox(int box) {
+        this.invalidateBox(box, new Rect());
+    }
+
     public void invalidateBox(int box, Rect tempRect) {
         final RectF rectf = this.boxes[box];
-        if (tempRect == null) {
-            tempRect = new Rect();
-        }
         rectf.roundOut(tempRect);
         this.invalidate(tempRect);
     }
@@ -156,6 +157,36 @@ public class SudokuView extends View {
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 this.moveSelectedBox(1);
+                return true;
+            case KeyEvent.KEYCODE_0:
+                this.setSelectedBoxValue(0);
+                return true;
+            case KeyEvent.KEYCODE_1:
+                this.setSelectedBoxValue(1);
+                return true;
+            case KeyEvent.KEYCODE_2:
+                this.setSelectedBoxValue(2);
+                return true;
+            case KeyEvent.KEYCODE_3:
+                this.setSelectedBoxValue(3);
+                return true;
+            case KeyEvent.KEYCODE_4:
+                this.setSelectedBoxValue(4);
+                return true;
+            case KeyEvent.KEYCODE_5:
+                this.setSelectedBoxValue(5);
+                return true;
+            case KeyEvent.KEYCODE_6:
+                this.setSelectedBoxValue(6);
+                return true;
+            case KeyEvent.KEYCODE_7:
+                this.setSelectedBoxValue(7);
+                return true;
+            case KeyEvent.KEYCODE_8:
+                this.setSelectedBoxValue(8);
+                return true;
+            case KeyEvent.KEYCODE_9:
+                this.setSelectedBoxValue(9);
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
@@ -253,6 +284,14 @@ public class SudokuView extends View {
             return true;
         } else {
             return super.onTouchEvent(event);
+        }
+    }
+
+    public void setSelectedBoxValue(int newValue) {
+        final int boxIndex = this.selectedBoxIndex;
+        if (boxIndex >= 0) {
+            this.game.setPuzzleValue(boxIndex, newValue);
+            this.invalidateBox(boxIndex);
         }
     }
 

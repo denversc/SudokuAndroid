@@ -43,4 +43,11 @@ public class GameActivity extends Activity {
         this.setContentView(this.sudokuView);
         this.sudokuView.requestFocus();
     }
+
+    public void setPuzzleValue(int index, int value) {
+        if (value < 0 && value > 9) {
+            throw new IllegalArgumentException("value==" + value);
+        }
+        this.puzzle[index] = value;
+    }
 }
