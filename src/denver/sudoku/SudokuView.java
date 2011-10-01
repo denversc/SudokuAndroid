@@ -2,8 +2,9 @@ package denver.sudoku;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.View;
 
@@ -14,7 +15,9 @@ public class SudokuView extends View {
     private final float[] majorLines;
     private final float[] minorLines;
     private final float[] hiliteLines;
-    private final RectF[] boxes;
+    private final PointF[] boxes;
+    private float boxWidth;
+    private float boxHeight;
 
     public SudokuView(GameActivity game) {
         super(game);
@@ -26,10 +29,10 @@ public class SudokuView extends View {
         this.minorLines = new float[4 * 12];
         this.hiliteLines =
             new float[this.majorLines.length + this.minorLines.length];
-        this.boxes = new RectF[9 * 9];
+        this.boxes = new PointF[9 * 9];
 
         for (int i = this.boxes.length - 1; i >= 0; i--) {
-            this.boxes[i] = new RectF();
+            this.boxes[i] = new PointF();
         }
     }
 
@@ -59,18 +62,27 @@ public class SudokuView extends View {
         canvas.drawLines(this.majorLines, majorLinesPaint);
 
         // paint the numbers
-        final Paint numbersPaint = new Paint();
-        final int numbersColor = Color.BLACK;
-        numbersPaint.setColor(numbersColor);
+        final Paint fgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        final int fgColor = resources.getColor(R.color.puzzle_foreground);
+        fgPaint.setColor(fgColor);
+        fgPaint.setStyle(Paint.Style.FILL);
+        fgPaint.setTextSize(this.boxHeight * 0.75f);
+        fgPaint.setTextScaleX(this.boxWidth / this.boxHeight);
+        fgPaint.setTextAlign(Paint.Align.CENTER);
+
+        final FontMetrics fontMetrics = fgPaint.getFontMetrics();
+        final float fontHeight = fontMetrics.ascent + fontMetrics.descent;
+        final float fontHeightDiv2 = fontHeight / 2f;
+
         final char[] text = new char[1];
         for (int i = this.boxes.length - 1; i >= 0; i--) {
-            final RectF box = this.boxes[i];
             final int digit = this.game.getPuzzleValue(i);
             final char c = digitToChar(digit);
             text[0] = c;
-            final float x = box.left;
-            final float y = box.top;
-            canvas.drawText(text, 0, 1, x, y, numbersPaint);
+            final PointF point = this.boxes[i];
+            final float x = point.x;
+            final float y = point.y - fontHeightDiv2;
+            canvas.drawText(text, 0, 1, x, y, fgPaint);
         }
     }
 
@@ -126,23 +138,29 @@ public class SudokuView extends View {
             this.hiliteLines[hiliteIndex++] = this.minorLines[i] + 1f;
         }
 
-        // calculate the sizes of the boxes
+        // calculate the coordinates of the center of the boxes
         final float boxWidth = w / 9f;
         final float boxHeight = h / 9f;
         index = 0;
         float y = 0f;
+        final RectF box = new RectF();
         for (int row = 0; row < 9; row++) {
             float x = 0f;
             for (int col = 0; col < 9; col++) {
-                final RectF rect = this.boxes[index++];
-                rect.left = x;
+                box.left = x;
                 x += boxWidth;
-                rect.right = x;
-                rect.top = y;
-                rect.bottom = y + boxHeight;
+                box.right = x;
+                box.top = y;
+                box.bottom = y + boxHeight;
+
+                final PointF point = this.boxes[index++];
+                point.x = box.centerX();
+                point.y = box.centerY();
             }
             y += boxHeight;
         }
+        this.boxWidth = boxWidth;
+        this.boxHeight = boxHeight;
     }
 
     public static char digitToChar(int digit) {
