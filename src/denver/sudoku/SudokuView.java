@@ -104,10 +104,7 @@ public class SudokuView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(this.bgColor);
         canvas.drawLines(this.hiliteLines, this.hiliteLinesPaint);
-        canvas.drawLines(this.minorLines, this.minorLinesPaint);
-        canvas.drawLines(this.majorLines, this.majorLinesPaint);
 
-        // paint the numbers
         this.fgPaint.setTextSize(this.boxHeight * 0.75f);
         this.fgPaint.setTextScaleX(this.boxWidth / this.boxHeight);
 
@@ -130,6 +127,9 @@ public class SudokuView extends View {
             final float y = point.y - fontHeightDiv2;
             canvas.drawText(text, 0, 1, x, y, this.fgPaint);
         }
+
+        canvas.drawLines(this.minorLines, this.minorLinesPaint);
+        canvas.drawLines(this.majorLines, this.majorLinesPaint);
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
