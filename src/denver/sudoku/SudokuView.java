@@ -31,6 +31,7 @@ public class SudokuView extends View {
     private float boxHeight;
 
     private int selectedBoxIndex;
+    private boolean hintsEnabled;
 
     public SudokuView(GameActivity game) {
         super(game);
@@ -99,6 +100,10 @@ public class SudokuView extends View {
         this.invalidate(tempRect);
     }
 
+    public boolean isHintsEnabled() {
+        return this.hintsEnabled;
+    }
+
     public void moveSelectedBox(int delta) {
         final int newBoxIndex;
         if (this.selectedBoxIndex == -1) {
@@ -150,7 +155,7 @@ public class SudokuView extends View {
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        final int digit = KeypadDialog.keyCodeToDigit(keyCode);
+        final int digit = KeypadDialog.getKeyCodeByDigit(keyCode);
         if (digit >= 0 && digit <= 9) {
             if (this.setSelectedBoxValue(digit)) {
                 return true;
@@ -283,6 +288,10 @@ public class SudokuView extends View {
         }
     }
 
+    public void setHintsEnabled(boolean hintsEnabled) {
+        this.hintsEnabled = hintsEnabled;
+    }
+
     public void setSelectedBox(int boxIndex) {
         if (boxIndex < -1 || boxIndex >= this.boxes.length) {
             throw new IllegalArgumentException("boxIndex==" + boxIndex);
@@ -321,6 +330,16 @@ public class SudokuView extends View {
         }
 
         final KeypadDialog keypad = new KeypadDialog(this.game);
+
+        if (this.isHintsEnabled()) {
+            final boolean[] available = this.game.getAvailableDigits(boxIndex);
+            for (int i = available.length - 1; i >= 0; i--) {
+                if (!available[i]) {
+                    keypad.setKeyEnabled(i + 1, false);
+                }
+            }
+        }
+
         final KeypadDialog.OnKeySelectedListener keypadDialogListener =
             new KeypadDialogOnKeySelectedListenerImpl(boxIndex);
         keypad.setOnKeySelectedListener(keypadDialogListener);

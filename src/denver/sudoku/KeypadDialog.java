@@ -8,10 +8,13 @@ import android.view.View;
 
 public class KeypadDialog extends Dialog {
 
+    private final boolean[] disabledKeys;
+
     private OnKeySelectedListener onKeySelectedListener;
 
     public KeypadDialog(Context context) {
         super(context);
+        this.disabledKeys = new boolean[10];
     }
 
     public void doSelectDigit(int digit) {
@@ -19,47 +22,22 @@ public class KeypadDialog extends Dialog {
         this.dismiss();
     }
 
-    public void doSelectDigitByButtonId(int id) {
-        final int digit;
-        switch (id) {
-            case R.id.keypad1:
-                digit = 1;
-                break;
-            case R.id.keypad2:
-                digit = 2;
-                break;
-            case R.id.keypad3:
-                digit = 3;
-                break;
-            case R.id.keypad4:
-                digit = 4;
-                break;
-            case R.id.keypad5:
-                digit = 5;
-                break;
-            case R.id.keypad6:
-                digit = 6;
-                break;
-            case R.id.keypad7:
-                digit = 7;
-                break;
-            case R.id.keypad8:
-                digit = 8;
-                break;
-            case R.id.keypad9:
-                digit = 9;
-                break;
-            case R.id.keypadClear:
-                digit = 0;
-                break;
-            default:
-                return;
-        }
-        this.doSelectDigit(digit);
-    }
-
     public OnKeySelectedListener getOnKeySelectedListener() {
         return this.onKeySelectedListener;
+    }
+
+    private void initButton(int id, View.OnClickListener onClickListener) {
+        final View view = this.findViewById(id);
+        view.setOnClickListener(onClickListener);
+        final int digit = getDigitByButtonId(id);
+        if (!this.isKeyEnabled(digit)) {
+            view.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public boolean isKeyEnabled(int digit) {
+        final boolean disabled = this.disabledKeys[digit];
+        return !disabled;
     }
 
     public void notifyKeySelected(int digit) {
@@ -76,21 +54,20 @@ public class KeypadDialog extends Dialog {
 
         final View.OnClickListener buttonClickListener =
             new KeyButtonOnClickListener();
-        this.findViewById(R.id.keypad1).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad2).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad3).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad4).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad5).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad6).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad7).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad8).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypad9).setOnClickListener(buttonClickListener);
-        this.findViewById(R.id.keypadClear).setOnClickListener(
-            buttonClickListener);
+        this.initButton(R.id.keypad1, buttonClickListener);
+        this.initButton(R.id.keypad2, buttonClickListener);
+        this.initButton(R.id.keypad3, buttonClickListener);
+        this.initButton(R.id.keypad4, buttonClickListener);
+        this.initButton(R.id.keypad5, buttonClickListener);
+        this.initButton(R.id.keypad6, buttonClickListener);
+        this.initButton(R.id.keypad7, buttonClickListener);
+        this.initButton(R.id.keypad8, buttonClickListener);
+        this.initButton(R.id.keypad9, buttonClickListener);
+        this.initButton(R.id.keypadClear, buttonClickListener);
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        final int digit = keyCodeToDigit(keyCode);
+        final int digit = getKeyCodeByDigit(keyCode);
         if (digit >= 0) {
             this.doSelectDigit(digit);
             return true;
@@ -99,11 +76,42 @@ public class KeypadDialog extends Dialog {
         }
     }
 
+    public void setKeyEnabled(int digit, boolean enabled) {
+        this.disabledKeys[digit] = !enabled;
+    }
+
     public void setOnKeySelectedListener(OnKeySelectedListener listener) {
         this.onKeySelectedListener = listener;
     }
 
-    public static int keyCodeToDigit(int keycode) {
+    private static int getDigitByButtonId(int id) {
+        switch (id) {
+            case R.id.keypad1:
+                return 1;
+            case R.id.keypad2:
+                return 2;
+            case R.id.keypad3:
+                return 3;
+            case R.id.keypad4:
+                return 4;
+            case R.id.keypad5:
+                return 5;
+            case R.id.keypad6:
+                return 6;
+            case R.id.keypad7:
+                return 7;
+            case R.id.keypad8:
+                return 8;
+            case R.id.keypad9:
+                return 9;
+            case R.id.keypadClear:
+                return 0;
+            default:
+                throw new IllegalArgumentException("id==" + id);
+        }
+    }
+
+    public static int getKeyCodeByDigit(int keycode) {
         switch (keycode) {
             case KeyEvent.KEYCODE_0:
             case KeyEvent.KEYCODE_SPACE:
@@ -135,7 +143,10 @@ public class KeypadDialog extends Dialog {
 
         public void onClick(View v) {
             final int id = v.getId();
-            KeypadDialog.this.doSelectDigitByButtonId(id);
+            final int digit = getDigitByButtonId(id);
+            if (digit >= 0) {
+                KeypadDialog.this.doSelectDigit(digit);
+            }
         }
 
     }

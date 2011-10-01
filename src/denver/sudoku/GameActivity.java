@@ -1,5 +1,7 @@
 package denver.sudoku;
 
+import java.util.Arrays;
+
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -16,21 +18,35 @@ public class GameActivity extends Activity {
     private int[] puzzle;
     private boolean[] puzzleEditable;
 
-    public int[] getPuzzleFromIntent() {
-        final int difficulty =
-            this.getIntent().getIntExtra(KEY_DIFFICULTY, DIFFICULTY_EASY);
-        switch (difficulty) {
-            case DIFFICULTY_EASY:
-                return Puzzles.getEasyPuzzle();
-            case DIFFICULTY_MEDIUM:
-                return Puzzles.getMediumPuzzle();
-            case DIFFICULTY_HARD:
-                return Puzzles.getHardPuzzle();
-            default:
-                throw new IllegalArgumentException(
-                    "invalid difficulty retrieved from intent key \""
-                        + KEY_DIFFICULTY + "\": " + difficulty);
+    public boolean[] getAvailableDigits(int index) {
+        final boolean[] available = new boolean[9];
+        Arrays.fill(available, true);
+
+        // search the row for already used values
+        int rowIndex = index;
+        while (rowIndex > 0 && rowIndex % 9 != 0) {
+            rowIndex--;
         }
+        for (int i = rowIndex + 8; i >= rowIndex; i--) {
+            final int value = this.puzzle[i];
+            if (value != 0) {
+                available[value - 1] = false;
+            }
+        }
+
+        // search the column for already used values
+        int colIndex = index;
+        while (colIndex >= 0) {
+            colIndex -= 9;
+        }
+        for (int i = colIndex + 9; i < this.puzzle.length; i += 9) {
+            final int value = this.puzzle[i];
+            if (value != 0) {
+                available[value - 1] = false;
+            }
+        }
+
+        return available;
     }
 
     public int getPuzzleValue(int index) {
@@ -45,7 +61,24 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.puzzle = this.getPuzzleFromIntent();
+        final int difficulty =
+            this.getIntent().getIntExtra(KEY_DIFFICULTY, DIFFICULTY_EASY);
+        switch (difficulty) {
+            case DIFFICULTY_EASY:
+                this.puzzle = Puzzles.getEasyPuzzle();
+                break;
+            case DIFFICULTY_MEDIUM:
+                this.puzzle = Puzzles.getMediumPuzzle();
+                break;
+            case DIFFICULTY_HARD:
+                this.puzzle = Puzzles.getHardPuzzle();
+                break;
+            default:
+                throw new IllegalArgumentException(
+                    "invalid difficulty retrieved from intent key \""
+                        + KEY_DIFFICULTY + "\": " + difficulty);
+        }
+
         this.puzzleEditable = new boolean[this.puzzle.length];
         for (int i = this.puzzle.length - 1; i >= 0; i--) {
             final int value = this.puzzle[i];
@@ -54,6 +87,10 @@ public class GameActivity extends Activity {
         }
 
         this.sudokuView = new SudokuView(this);
+
+        final boolean hintsEnabled = (difficulty != DIFFICULTY_HARD);
+        this.sudokuView.setHintsEnabled(hintsEnabled);
+
         this.setContentView(this.sudokuView);
         this.sudokuView.requestFocus();
     }
