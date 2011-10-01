@@ -5,7 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -28,8 +30,8 @@ public class SudokuView extends View {
     private float boxWidth;
     private float boxHeight;
 
-    private int selectedBox;
-    private boolean drawSelectedBox;
+    private final Rect selectedBox;
+    private int selectedBoxIndex;
 
     public SudokuView(GameActivity game) {
         super(game);
@@ -74,6 +76,29 @@ public class SudokuView extends View {
             this.boxCenters[i] = new PointF();
             this.boxes[i] = new RectF();
         }
+
+        this.selectedBoxIndex = -1;
+        this.selectedBox = new Rect();
+    }
+
+    public void moveSelectedBox(int delta) {
+        final int newBoxIndex;
+        if (this.selectedBoxIndex == -1) {
+            newBoxIndex = 0;
+        } else {
+            final int temp = this.selectedBoxIndex + delta;
+            if (temp < 0) {
+                newBoxIndex = this.boxes.length + temp;
+            } else {
+                newBoxIndex = temp % this.boxes.length;
+            }
+        }
+
+        this.invalidate(this.selectedBox);
+        this.selectedBoxIndex = newBoxIndex;
+        final RectF newSelectedRect = this.boxes[newBoxIndex];
+        newSelectedRect.roundOut(this.selectedBox);
+        this.invalidate(this.selectedBox);
     }
 
     protected void onDraw(Canvas canvas) {
@@ -92,7 +117,7 @@ public class SudokuView extends View {
 
         final char[] text = new char[1];
         for (int i = this.boxes.length - 1; i >= 0; i--) {
-            if (this.drawSelectedBox && i == this.selectedBox) {
+            if (i == this.selectedBoxIndex) {
                 final RectF rect = this.boxes[i];
                 canvas.drawRect(rect, this.selectedPaint);
             }
@@ -104,6 +129,25 @@ public class SudokuView extends View {
             final float x = point.x;
             final float y = point.y - fontHeightDiv2;
             canvas.drawText(text, 0, 1, x, y, this.fgPaint);
+        }
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+                this.moveSelectedBox(-9);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                this.moveSelectedBox(9);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                this.moveSelectedBox(-1);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                this.moveSelectedBox(1);
+                return true;
+            default:
+                return super.onKeyDown(keyCode, event);
         }
     }
 
