@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 import android.view.View;
 
 public class SudokuView extends View {
@@ -161,6 +162,20 @@ public class SudokuView extends View {
         }
         this.boxWidth = boxWidth;
         this.boxHeight = boxHeight;
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            this.showKeypad();
+            return true;
+        } else {
+            return super.onTouchEvent(event);
+        }
+    }
+
+    public void showKeypad() {
+        final KeypadDialog keypad = new KeypadDialog(this.game);
+        keypad.show();
     }
 
     public static char digitToChar(int digit) {
