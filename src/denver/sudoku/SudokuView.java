@@ -30,7 +30,6 @@ public class SudokuView extends View {
     private float boxWidth;
     private float boxHeight;
 
-    private final Rect selectedBox;
     private int selectedBoxIndex;
 
     public SudokuView(GameActivity game) {
@@ -78,7 +77,15 @@ public class SudokuView extends View {
         }
 
         this.selectedBoxIndex = -1;
-        this.selectedBox = new Rect();
+    }
+
+    public void invalidateBox(int box, Rect tempRect) {
+        final RectF rectf = this.boxes[box];
+        if (tempRect == null) {
+            tempRect = new Rect();
+        }
+        rectf.roundOut(tempRect);
+        this.invalidate(tempRect);
     }
 
     public void moveSelectedBox(int delta) {
@@ -94,11 +101,12 @@ public class SudokuView extends View {
             }
         }
 
-        this.invalidate(this.selectedBox);
+        final Rect tempRect = new Rect();
+        if (this.selectedBoxIndex >= 0) {
+            this.invalidateBox(this.selectedBoxIndex, tempRect);
+        }
+        this.invalidateBox(newBoxIndex, tempRect);
         this.selectedBoxIndex = newBoxIndex;
-        final RectF newSelectedRect = this.boxes[newBoxIndex];
-        newSelectedRect.roundOut(this.selectedBox);
-        this.invalidate(this.selectedBox);
     }
 
     protected void onDraw(Canvas canvas) {
