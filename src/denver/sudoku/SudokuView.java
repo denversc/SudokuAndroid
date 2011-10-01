@@ -150,6 +150,13 @@ public class SudokuView extends View {
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        final int digit = KeypadDialog.keyCodeToDigit(keyCode);
+        if (digit >= 0 && digit <= 9) {
+            if (this.setSelectedBoxValue(digit)) {
+                return true;
+            }
+        }
+
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
                 this.moveSelectedBox(-9);
@@ -165,17 +172,10 @@ public class SudokuView extends View {
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
-            case KeyEvent.KEYCODE_SPACE:
                 if (this.showKeypad()) {
                     return true;
                 }
                 break;
-            default:
-                final int digit = KeypadDialog.keyCodeToDigit(keyCode);
-                if (digit >= 0 && digit <= 9) {
-                    this.setSelectedBoxValue(digit);
-                    return true;
-                }
         }
 
         return super.onKeyDown(keyCode, event);
@@ -274,9 +274,12 @@ public class SudokuView extends View {
         return super.onTouchEvent(event);
     }
 
-    public void setBoxValue(int boxIndex, int newValue) {
+    public boolean setBoxValue(int boxIndex, int newValue) {
         if (this.game.setPuzzleValue(boxIndex, newValue)) {
             this.invalidateBox(boxIndex);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -299,10 +302,13 @@ public class SudokuView extends View {
         this.selectedBoxIndex = boxIndex;
     }
 
-    public void setSelectedBoxValue(int newValue) {
+    public boolean setSelectedBoxValue(int newValue) {
         final int boxIndex = this.selectedBoxIndex;
         if (boxIndex >= 0) {
             this.setBoxValue(boxIndex, newValue);
+            return true;
+        } else {
+            return false;
         }
     }
 

@@ -106,6 +106,7 @@ public class KeypadDialog extends Dialog {
     public static int keyCodeToDigit(int keycode) {
         switch (keycode) {
             case KeyEvent.KEYCODE_0:
+            case KeyEvent.KEYCODE_SPACE:
                 return 0;
             case KeyEvent.KEYCODE_1:
                 return 1;
