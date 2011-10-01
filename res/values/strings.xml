@@ -25,4 +25,5 @@
     <string name="easy_label">Easy</string>
     <string name="medium_label">Medium</string>
     <string name="hard_label">Hard</string>
+    <string name="game_title">Sudoku Game</string>
 </resources>

@@ -64,12 +64,15 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-    public static void startGame(int difficulty) {
+    public void startGame(int difficulty) {
         Log.d(TAG, "Starting game with difficulty " + difficulty);
+        final Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra(GameActivity.KEY_DIFFICULTY, difficulty);
+        this.startActivity(intent);
     }
 
-    private static class OpenNewGameDialog extends AlertDialog.Builder
-            implements DialogInterface.OnClickListener {
+    private class OpenNewGameDialog extends AlertDialog.Builder implements
+            DialogInterface.OnClickListener {
 
         public OpenNewGameDialog(Context context) {
             super(context);
@@ -78,7 +81,7 @@ public class MainActivity extends Activity implements OnClickListener {
         }
 
         public void onClick(DialogInterface dialog, int which) {
-            startGame(which);
+            MainActivity.this.startGame(which);
         }
 
     }
