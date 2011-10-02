@@ -7,6 +7,7 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +21,7 @@ public class SudokuView extends View {
     private final Paint minorLinesPaint;
     private final Paint majorLinesPaint;
     private final Paint fgPaint;
+    private final Paint fgNonEditablePaint;
     private final Paint selectedPaint;
 
     private final float[] majorLines;
@@ -27,6 +29,7 @@ public class SudokuView extends View {
     private final float[] hiliteLines;
     private final PointF[] boxCenters;
     private final RectF[] boxes;
+    private final boolean[] boxesEditable;
     private float boxWidth;
     private float boxHeight;
 
@@ -61,6 +64,12 @@ public class SudokuView extends View {
         this.fgPaint.setStyle(Paint.Style.FILL);
         this.fgPaint.setTextAlign(Paint.Align.CENTER);
 
+        this.fgNonEditablePaint = new Paint(this.fgPaint);
+        Typeface fgNonEditableTypeface = this.fgNonEditablePaint.getTypeface();
+        fgNonEditableTypeface =
+            Typeface.create(fgNonEditableTypeface, Typeface.BOLD);
+        this.fgNonEditablePaint.setTypeface(fgNonEditableTypeface);
+
         this.selectedPaint = new Paint();
         final int selectedColor = resources.getColor(R.color.puzzle_selected);
         this.selectedPaint.setColor(selectedColor);
@@ -71,10 +80,12 @@ public class SudokuView extends View {
             new float[this.majorLines.length + this.minorLines.length];
         this.boxCenters = new PointF[9 * 9];
         this.boxes = new RectF[9 * 9];
+        this.boxesEditable = new boolean[this.boxes.length];
 
         for (int i = this.boxes.length - 1; i >= 0; i--) {
             this.boxCenters[i] = new PointF();
             this.boxes[i] = new RectF();
+            this.boxesEditable[i] = game.isPuzzleValueEditable(i);
         }
 
         this.selectedBoxIndex = -1;
@@ -124,8 +135,12 @@ public class SudokuView extends View {
         canvas.drawColor(this.bgColor);
         canvas.drawLines(this.hiliteLines, this.hiliteLinesPaint);
 
-        this.fgPaint.setTextSize(this.boxHeight * 0.75f);
-        this.fgPaint.setTextScaleX(this.boxWidth / this.boxHeight);
+        final float textSize = this.boxHeight * 0.75f;
+        final float textScaleX = this.boxWidth / this.boxHeight;
+        this.fgPaint.setTextSize(textSize);
+        this.fgPaint.setTextScaleX(textScaleX);
+        this.fgNonEditablePaint.setTextSize(textSize);
+        this.fgNonEditablePaint.setTextScaleX(textScaleX);
 
         final FontMetrics fontMetrics = this.fgPaint.getFontMetrics();
         final float fontHeight = fontMetrics.ascent + fontMetrics.descent;
@@ -147,7 +162,15 @@ public class SudokuView extends View {
             final PointF point = this.boxCenters[i];
             final float x = point.x;
             final float y = point.y - fontHeightDiv2;
-            canvas.drawText(text, 0, 1, x, y, this.fgPaint);
+
+            final Paint paint;
+            if (this.boxesEditable[i]) {
+                paint = this.fgPaint;
+            } else {
+                paint = this.fgNonEditablePaint;
+            }
+
+            canvas.drawText(text, 0, 1, x, y, paint);
         }
 
         canvas.drawLines(this.minorLines, this.minorLinesPaint);
@@ -325,7 +348,7 @@ public class SudokuView extends View {
         final int boxIndex = this.selectedBoxIndex;
         if (boxIndex < 0) {
             return false;
-        } else if (!this.game.isPuzzleValueEditable(boxIndex)) {
+        } else if (!this.boxesEditable[boxIndex]) {
             return true;
         }
 
