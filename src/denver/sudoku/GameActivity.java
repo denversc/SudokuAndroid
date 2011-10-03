@@ -92,11 +92,19 @@ public class GameActivity extends Activity {
                         + KEY_DIFFICULTY + "\": " + difficulty);
         }
 
-        this.puzzleEditable = new boolean[this.puzzle.length];
-        for (int i = this.puzzle.length - 1; i >= 0; i--) {
-            final int value = this.puzzle[i];
-            final boolean editable = (value == 0);
-            this.puzzleEditable[i] = editable;
+        final Object lastState = this.getLastNonConfigurationInstance();
+        if (lastState instanceof NonConfigurationState) {
+            final NonConfigurationState state =
+                (NonConfigurationState) lastState;
+            this.puzzle = state.puzzle;
+            this.puzzleEditable = state.puzzleEditable;
+        } else {
+            this.puzzleEditable = new boolean[this.puzzle.length];
+            for (int i = this.puzzle.length - 1; i >= 0; i--) {
+                final int value = this.puzzle[i];
+                final boolean editable = (value == 0);
+                this.puzzleEditable[i] = editable;
+            }
         }
 
         this.sudokuView = new SudokuView(this);
@@ -118,6 +126,13 @@ public class GameActivity extends Activity {
     protected void onResume() {
         super.onResume();
         this.audioPlayer.start(this, R.raw.game);
+    }
+
+    public Object onRetainNonConfigurationInstance() {
+        final NonConfigurationState state = new NonConfigurationState();
+        state.puzzle = this.puzzle;
+        state.puzzleEditable = this.puzzleEditable;
+        return state;
     }
 
     public boolean setPuzzleValue(int index, int value) {
@@ -167,5 +182,10 @@ public class GameActivity extends Activity {
         }
 
         return regions;
+    }
+
+    private static class NonConfigurationState {
+        public int[] puzzle;
+        public boolean[] puzzleEditable;
     }
 }

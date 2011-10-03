@@ -8,11 +8,16 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
 public class SudokuView extends View {
+
+    private static final String KEY_SUPER_STATE = "SUPER_STATE";
+    private static final String KEY_SELECTED_BOX_INDEX = "SELECTED_BOX_INDEX";
 
     private final GameActivity game;
 
@@ -39,6 +44,8 @@ public class SudokuView extends View {
     public SudokuView(GameActivity game) {
         super(game);
         this.game = game;
+
+        this.setId(0x3cf86238);
 
         this.setFocusable(true);
         this.setFocusableInTouchMode(true);
@@ -207,6 +214,21 @@ public class SudokuView extends View {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    protected void onRestoreInstanceState(Parcelable state) {
+        final Bundle bundle = (Bundle) state;
+        final Parcelable superState = bundle.getParcelable(KEY_SUPER_STATE);
+        super.onRestoreInstanceState(superState);
+        this.selectedBoxIndex = bundle.getInt(KEY_SELECTED_BOX_INDEX);
+    }
+
+    protected Parcelable onSaveInstanceState() {
+        final Parcelable superState = super.onSaveInstanceState();
+        final Bundle bundle = new Bundle();
+        bundle.putInt(KEY_SELECTED_BOX_INDEX, this.selectedBoxIndex);
+        bundle.putParcelable(KEY_SUPER_STATE, superState);
+        return bundle;
     }
 
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
