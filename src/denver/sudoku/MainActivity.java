@@ -17,6 +17,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
     public static final String TAG = "Sudoku";
 
+    private AudioPlayer audioPlayer;
+
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.about_button:
@@ -45,6 +47,8 @@ public class MainActivity extends Activity implements OnClickListener {
         aboutButton.setOnClickListener(this);
         final View exitButton = this.findViewById(R.id.exit_button);
         exitButton.setOnClickListener(this);
+
+        this.audioPlayer = AudioPlayer.getAppInstance();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -62,6 +66,16 @@ public class MainActivity extends Activity implements OnClickListener {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    protected void onPause() {
+        super.onPause();
+        this.audioPlayer.stop();
+    }
+
+    protected void onResume() {
+        super.onResume();
+        this.audioPlayer.start(this, R.raw.main);
     }
 
     public void startGame(int difficulty) {

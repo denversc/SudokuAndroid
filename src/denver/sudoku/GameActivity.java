@@ -19,6 +19,7 @@ public class GameActivity extends Activity {
     private SudokuView sudokuView;
     private int[] puzzle;
     private boolean[] puzzleEditable;
+    private AudioPlayer audioPlayer;
 
     public boolean[] getAvailableDigits(int index) {
         final boolean[] available = new boolean[9];
@@ -103,8 +104,20 @@ public class GameActivity extends Activity {
         final boolean hintsEnabled = (difficulty != DIFFICULTY_HARD);
         this.sudokuView.setHintsEnabled(hintsEnabled);
 
+        this.audioPlayer = AudioPlayer.getAppInstance();
+
         this.setContentView(this.sudokuView);
         this.sudokuView.requestFocus();
+    }
+
+    protected void onPause() {
+        super.onPause();
+        this.audioPlayer.stop();
+    }
+
+    protected void onResume() {
+        super.onResume();
+        this.audioPlayer.start(this, R.raw.game);
     }
 
     public boolean setPuzzleValue(int index, int value) {
