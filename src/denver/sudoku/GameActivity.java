@@ -109,7 +109,7 @@ public class GameActivity extends Activity {
 
         this.sudokuView = new SudokuView(this);
 
-        final boolean hintsEnabled = (difficulty != DIFFICULTY_HARD);
+        final boolean hintsEnabled = PrefsActivity.isHintsEnabled(this);
         this.sudokuView.setHintsEnabled(hintsEnabled);
 
         this.audioPlayer = AudioPlayer.getAppInstance();

@@ -8,7 +8,6 @@ public class AudioPlayer {
     private static AudioPlayer instance;
 
     private MediaPlayer player;
-    private int playerResourceId;
 
     public void start(Context context, int resourceId) {
         if (context == null) {
@@ -16,16 +15,16 @@ public class AudioPlayer {
         }
 
         if (this.player != null) {
-            if (this.playerResourceId == resourceId) {
-                return;
-            }
             this.stop();
+        }
+
+        if (!PrefsActivity.isMusicEnabled(context)) {
+            return;
         }
 
         this.player = MediaPlayer.create(context, resourceId);
         this.player.setLooping(true);
         this.player.start();
-        this.playerResourceId = resourceId;
     }
 
     public synchronized void stop() {
