@@ -19,12 +19,22 @@ public class MainActivity extends Activity implements OnClickListener {
 
     private AudioPlayer audioPlayer;
 
+    public void continueGame() {
+        final Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra(GameActivity.KEY_DIFFICULTY,
+            GameActivity.DIFFICULTY_CONTINUE);
+        this.startActivity(intent);
+    }
+
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.about_button:
                 final Intent i =
                     new Intent(MainActivity.this, AboutActivity.class);
                 MainActivity.this.startActivity(i);
+                break;
+            case R.id.continue_button:
+                this.continueGame();
                 break;
             case R.id.new_button:
                 new OpenNewGameDialog(this).show();

@@ -2,7 +2,12 @@ package denver.sudoku;
 
 import java.util.Arrays;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 public class GameActivity extends Activity {
@@ -12,6 +17,11 @@ public class GameActivity extends Activity {
 
     private static int[][] REGIONS;
 
+    private static final String PREFS_KEY = "GameActivityPrefsKey";
+    private static final String KEY_PUZZLE = "puzzle";
+    private static final String KEY_PUZZLE_EDITABLE = "puzzleEditable";
+
+    public static final int DIFFICULTY_CONTINUE = -1;
     public static final int DIFFICULTY_EASY = 0;
     public static final int DIFFICULTY_MEDIUM = 1;
     public static final int DIFFICULTY_HARD = 2;
@@ -74,6 +84,7 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        String stateJson = null;
         final int difficulty =
             this.getIntent().getIntExtra(KEY_DIFFICULTY, DIFFICULTY_EASY);
         switch (difficulty) {
@@ -86,18 +97,27 @@ public class GameActivity extends Activity {
             case DIFFICULTY_HARD:
                 this.puzzle = Puzzles.getHardPuzzle();
                 break;
+            case DIFFICULTY_CONTINUE:
+                this.puzzle = Puzzles.getEasyPuzzle();
+                final SharedPreferences prefs =
+                    this.getPreferences(MODE_PRIVATE);
+                stateJson = prefs.getString(PREFS_KEY, null);
+                break;
             default:
                 throw new IllegalArgumentException(
                     "invalid difficulty retrieved from intent key \""
                         + KEY_DIFFICULTY + "\": " + difficulty);
         }
 
-        final Object lastState = this.getLastNonConfigurationInstance();
-        if (lastState instanceof NonConfigurationState) {
-            final NonConfigurationState state =
-                (NonConfigurationState) lastState;
-            this.puzzle = state.puzzle;
-            this.puzzleEditable = state.puzzleEditable;
+        if (stateJson != null) {
+            final NonConfigurationState state = new NonConfigurationState();
+            try {
+                state.fromString(stateJson);
+                this.puzzle = state.puzzle;
+                this.puzzleEditable = state.puzzleEditable;
+            } catch (final JSONException e) {
+                this.puzzle = new int[81];
+            }
         } else {
             this.puzzleEditable = new boolean[this.puzzle.length];
             for (int i = this.puzzle.length - 1; i >= 0; i--) {
@@ -116,23 +136,30 @@ public class GameActivity extends Activity {
 
         this.setContentView(this.sudokuView);
         this.sudokuView.requestFocus();
+
+        this.getIntent().putExtra(KEY_DIFFICULTY, DIFFICULTY_CONTINUE);
     }
 
     protected void onPause() {
         super.onPause();
         this.audioPlayer.stop();
+
+        final NonConfigurationState state = new NonConfigurationState();
+        state.puzzle = this.puzzle;
+        state.puzzleEditable = this.puzzleEditable;
+        final String stateJson = state.toString();
+
+        if (stateJson != null) {
+            final SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putString(PREFS_KEY, stateJson);
+            prefsEditor.commit();
+        }
     }
 
     protected void onResume() {
         super.onResume();
         this.audioPlayer.start(this, R.raw.game);
-    }
-
-    public Object onRetainNonConfigurationInstance() {
-        final NonConfigurationState state = new NonConfigurationState();
-        state.puzzle = this.puzzle;
-        state.puzzleEditable = this.puzzleEditable;
-        return state;
     }
 
     public boolean setPuzzleValue(int index, int value) {
@@ -187,5 +214,51 @@ public class GameActivity extends Activity {
     private static class NonConfigurationState {
         public int[] puzzle;
         public boolean[] puzzleEditable;
+
+        public void fromString(String s) throws JSONException {
+            if (s == null) {
+                throw new NullPointerException("s==null");
+            }
+
+            try {
+                final JSONObject o = new JSONObject(s);
+                final JSONArray puzzleJson = o.getJSONArray(KEY_PUZZLE);
+                this.puzzle = new int[puzzleJson.length()];
+                for (int i = this.puzzle.length - 1; i >= 0; i--) {
+                    this.puzzle[i] = puzzleJson.getInt(i);
+                }
+                final JSONArray puzzleEditableJson =
+                    o.getJSONArray(KEY_PUZZLE_EDITABLE);
+                this.puzzleEditable = new boolean[puzzleEditableJson.length()];
+                for (int i = this.puzzleEditable.length - 1; i >= 0; i--) {
+                    this.puzzleEditable[i] = puzzleEditableJson.getBoolean(i);
+                }
+            } catch (final JSONException e) {
+                throw new RuntimeException(e.toString());
+            }
+        }
+
+        public String toString() {
+            try {
+                final JSONArray puzzleJson = new JSONArray();
+                for (int i = this.puzzle.length - 1; i >= 0; i--) {
+                    final int value = this.puzzle[i];
+                    puzzleJson.put(i, value);
+                }
+                final JSONArray puzzleEditableJson = new JSONArray();
+                for (int i = this.puzzleEditable.length - 1; i >= 0; i--) {
+                    final boolean value = this.puzzleEditable[i];
+                    puzzleEditableJson.put(i, value);
+                }
+                final JSONObject o = new JSONObject();
+                o.put(KEY_PUZZLE, puzzleJson);
+                o.put(KEY_PUZZLE_EDITABLE, puzzleEditableJson);
+                return o.toString();
+            } catch (final JSONException e) {
+                throw new RuntimeException(e.toString());
+            }
+        }
+
     }
+
 }
